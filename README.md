@@ -62,3 +62,25 @@ with 'file ' to produce an instruction file that `ffmpeg` likes.
 
 And you're done!  Enjoy your fun video.  VLC is probably the best tool
 to view it in.
+
+### Reducing PNG Storage Space
+
+The PNG files created by ffmpeg are not as optimized as they could
+be.  ImageMagick can help with this, but if you end up with a large
+pile of files, reprocessing them all can be annoying.  The generic
+`process-file-once.py` script here is meant to be used avoid
+re-running expensive operations on files by tracking if a given
+command line has been run on a file before and, if so, skipping
+running.  This makes commands idempotent no-ops and lets you lazily
+re-run `find` commands over and over without wasting time reprocessing
+already processed files.
+
+Here's how I use it in this project:
+
+```
+$ find /path/to/pile -name '*.png' | parallel --progress -I{} 'process-file-once.py {} mogrify -format png -define png:compression-level=9 {}'
+```
+
+The use of GNU `parallel` here effectively saturates your CPU.
+
+This saves me roughly 25% space.
