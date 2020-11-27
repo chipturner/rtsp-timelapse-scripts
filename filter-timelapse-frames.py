@@ -26,7 +26,12 @@ def main() -> None:
         description="Grab timelapse frames from an RTSP source"
     )
     parser.add_argument("basedir")
-    parser.add_argument("--skip-weekends", type=bool, default=True)
+    parser.add_argument(
+        "--skip-weekends",
+        type=bool,
+        default=True,
+        action=argparse.BooleanOptionalAction,
+    )
     parser.add_argument("--sample", type=int, default=1)
     args = parser.parse_args(namespace=ArgNamespace)
 

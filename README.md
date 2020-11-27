@@ -38,8 +38,11 @@ During that time it will produce N evenly spaced out frames into the
 specified output directory.  Example cronjob:
 
 ```
-* * * * *	/path/to/grab-timelapse-frame.py --directory-strftime-pattern /path/to/output/%Y-%m-%d/%h --filename-strftime-pattern cam1-%Y-%m-%d_%H%M%S.png --url rtsp://HOST:PORT/PATH
+* * * * *	/path/to/grab-timelapse-frame.py --output-directory /path/to/outputs --output-filenames cam1 --url rtsp://HOST:PORT/PATH
 ```
+
+**NOTE**: If you use `strftime` in the output strings, don't forget to
+backslash `%` in your crontab -- cron translates them to newlines..
 
 ### Creating a video
 
