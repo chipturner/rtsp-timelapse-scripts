@@ -15,17 +15,17 @@ from typing import Tuple
 
 
 # Check if the sun is currently "out" in the specified city based on
-# today's sunrise and sunset in that city.
+# today's dawn and dusk in that city.
 def sun_is_out(city: str, buffer_minutes: int) -> bool:
     astral_db = astral.geocoder.database()
-    sunrise_city = astral.geocoder.lookup(city, astral_db)
-    timezone = pytz.timezone(sunrise_city.timezone)
-    sun_info = astral.sun.sun(sunrise_city.observer)
+    camera_city = astral.geocoder.lookup(city, astral_db)
+    timezone = pytz.timezone(camera_city.timezone)
+    sun_info = astral.sun.sun(camera_city.observer)
     delta = datetime.timedelta(minutes=buffer_minutes)
 
     now = datetime.datetime.now(tz=timezone)
-    lower = sun_info["sunrise"] - delta
-    upper = sun_info["sunset"] + delta
+    lower = sun_info["dawn"] - delta
+    upper = sun_info["dusk"] + delta
     return lower <= now <= upper
 
 

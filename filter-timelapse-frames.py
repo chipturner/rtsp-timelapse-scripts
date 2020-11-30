@@ -38,11 +38,11 @@ def main() -> None:
     # Look for files with name components YYYY-MM-DD_HHMMSS
     filename_regex = re.compile(r"\D(\d\d\d\d)-(\d\d)-(\d\d)_(\d\d)(\d\d)(\d\d)\D")
 
-    # Use Astral to lookup sunrise and sunset for the dates of files we
+    # Use Astral to lookup dawn and dusk for the dates of files we
     # find, relative to a specific city.
     astral_db = astral.geocoder.database()
-    sunrise_city = astral.geocoder.lookup("Seattle", astral_db)
-    timezone = pytz.timezone(sunrise_city.timezone)
+    camera_city = astral.geocoder.lookup("Seattle", astral_db)
+    timezone = pytz.timezone(camera_city.timezone)
 
     seen_count = 0  # for sampling
     # Walk!
@@ -63,8 +63,8 @@ def main() -> None:
                 continue
 
             # Only print filenames when the sun is up and that meet our sampling requirement.
-            sun_info = astral.sun.sun(sunrise_city.observer, date=image_datetime)
-            if sun_info["sunrise"] <= image_datetime <= sun_info["sunset"]:
+            sun_info = astral.sun.sun(camera_city.observer, date=image_datetime)
+            if sun_info["dawn"] <= image_datetime <= sun_info["dusk"]:
                 if seen_count % args.sample == 0:
                     print(os.path.join(root, filename))
                 seen_count += 1
