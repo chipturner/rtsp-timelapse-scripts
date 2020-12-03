@@ -20,7 +20,7 @@ def sun_is_out(city: str, buffer_minutes: int) -> bool:
     astral_db = astral.geocoder.database()
     camera_city = astral.geocoder.lookup(city, astral_db)
     timezone = pytz.timezone(camera_city.timezone)
-    sun_info = astral.sun.sun(camera_city.observer)
+    sun_info = astral.sun.sun(camera_city.observer, tzinfo=timezone)
     delta = datetime.timedelta(minutes=buffer_minutes)
 
     now = datetime.datetime.now(tz=timezone)

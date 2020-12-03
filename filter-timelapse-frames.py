@@ -55,15 +55,14 @@ def main() -> None:
 
             # Localize the time in the filename string
             yy, mm, dd, h, m, s = (int(x) for x in match.groups())
-            image_datetime = datetime.datetime(yy, mm, dd, h, m, s)
-            image_datetime = timezone.localize(image_datetime)
+            image_datetime = datetime.datetime(yy, mm, dd, h, m, s, tzinfo=timezone)
 
             # Skip weekends if requested.
             if args.skip_weekends and image_datetime.weekday() >= 5:
                 continue
 
             # Only print filenames when the sun is up and that meet our sampling requirement.
-            sun_info = astral.sun.sun(camera_city.observer, date=image_datetime)
+            sun_info = astral.sun.sun(camera_city.observer, date=image_datetime, tzinfo=timezone)
             if sun_info["dawn"] <= image_datetime <= sun_info["dusk"]:
                 if seen_count % args.sample == 0:
                     print(os.path.join(root, filename))
