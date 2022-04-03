@@ -29,8 +29,6 @@ def main() -> None:
     for idx in range(len(args)):
         args[idx] = args[idx].replace("{}", filename)
 
-    st = os.stat(filename)
-
     r = conn.execute(
         "SELECT cmd, device, inode, last_processed FROM files WHERE path = ? AND cmd = ?",
         (filename, args_string),
@@ -43,6 +41,7 @@ def main() -> None:
         except Exception as ex:
             pass
         if res == 0:
+            st = os.stat(filename)
             conn.execute(
                 "INSERT INTO files (path, cmd, device, inode, last_processed) VALUES (?, ?, ?, ?, ?)",
                 (filename, args_string, st.st_dev, st.st_ino, time.time()),
