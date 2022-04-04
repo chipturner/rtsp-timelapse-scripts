@@ -6,6 +6,7 @@ import astral.sun  # type: ignore
 
 import argparse
 import datetime
+import logging
 import pathlib
 import pytz
 import subprocess
@@ -43,6 +44,11 @@ class ArgNamespace:
 
 
 def main() -> None:
+    logging.basicConfig(
+        format="%(asctime)s.%(msecs)03d %(levelname)s %(module)s - %(funcName)s: %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S",
+        level=logging.DEBUG,
+    )
     parser = argparse.ArgumentParser(
         description="Grab timelapse frames from an RTSP source"
     )
@@ -68,7 +74,7 @@ def main() -> None:
 
     if args.daylight_only:
         if not sun_is_out(args.city, args.daylight_buffer_minutes):
-            print("Skipping snapshot outside of daylight hours")
+            logging.info("Skipping snapshot outside of daylight hours")
             sys.exit(0)
 
     output_filenames = args.output_filenames
@@ -87,7 +93,7 @@ def main() -> None:
     while time.time() < end_time:
         output = basedir / time.strftime(output_filenames)
         begin = time.time()
-        print(f"Capturing image {succeeded + failed + 1}...")
+        logging.info(f"Capturing image {succeeded + failed + 1}...")
         res = subprocess.call(
             f"ffmpeg -y -loglevel fatal -rtsp_transport tcp -i {args.url} -frames:v 1 {output}",
             shell=True,
@@ -99,7 +105,7 @@ def main() -> None:
         end = time.time()
         time.sleep(max(1, int(args.interval) - (end - begin)))
 
-    print(f"Succeeded: {succeeded}, failed: {failed}")
+    logging.info(f"Succeeded: {succeeded}, failed: {failed}")
     if failed >= args.duration / args.interval / 2:
         sys.exit(1)
     else:
