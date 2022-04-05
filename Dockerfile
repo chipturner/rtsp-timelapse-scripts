@@ -14,4 +14,4 @@ RUN rm -rf /var/lib/apt/lists/*
 ENV TZ=America/Los_Angeles
 COPY . .
 
-ENTRYPOINT [ "python", "grab-timelapse-frame.py" ]
+CMD [ "sh", "-c", "python grab-timelapse-frame.py --output-directory /output --output-filenames $PREFIX --interval $INTERVAL --url $URL" ]

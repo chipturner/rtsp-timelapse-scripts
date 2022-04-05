@@ -9,6 +9,10 @@ import time
 
 def main() -> None:
     conn = sqlite3.connect(pathlib.Path('~/.process-file-once.db').expanduser())
+    conn.execute("pragma journal_mode = WAL")
+    conn.execute("pragma synchronous = normal")
+    conn.execute("pragma mmap_size = 30000000000")
+    conn.execute("pragma page_size = 32768")
     conn.execute(
         """
         CREATE TABLE IF NOT EXISTS files (
