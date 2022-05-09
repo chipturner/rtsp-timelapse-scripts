@@ -2,6 +2,8 @@ extern crate redis;
 use redis::Commands;
 use std::env;
 use std::fs;
+use std::io;
+use std::io::Write;
 use std::process::Command;
 
 const KEY_NAME: &str = "process_once";
@@ -24,11 +26,22 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let count: bool = con.sismember(KEY_NAME, &key)?;
     if !count {
-        let output = Command::new(String::from(&params[0]))
+        let res = Command::new(String::from(&params[0]))
             .args(params[1..].iter())
-            .output()?;
-        assert!(output.status.success());
-        con.sadd(KEY_NAME, &key)?;
+            .output();
+        match res {
+            Ok(output) if output.status.success() => con.sadd(KEY_NAME, &key)?,
+            Ok(output) => {
+                eprintln!(
+                    "Non-zero command exit status: {:?} -> {}",
+                    params, output.status
+                );
+                io::stderr().write_all(&output.stderr)?;
+            }
+            Err(e) => {
+                eprintln!("Command execution failed: {:?} -> {}", params, e);
+            }
+        }
     }
 
     Ok(())
