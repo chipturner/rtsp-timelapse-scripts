@@ -36,7 +36,7 @@ def main() -> None:
     args = parser.parse_args(namespace=ArgNamespace)
 
     # Look for files with name components YYYY-MM-DD_HHMMSS
-    filename_regex = re.compile(r"\D(\d\d\d\d)-(\d\d)-(\d\d)_(\d\d)(\d\d)(\d\d)\D")
+    filename_regex = re.compile(r"\D(\d\d\d\d)-(\d\d)-(\d\d)_(\d\d)(\d\d)(\d\d)\D.*png$")
 
     # Use Astral to lookup dawn and dusk for the dates of files we
     # find, relative to a specific city.
