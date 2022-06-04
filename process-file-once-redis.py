@@ -8,7 +8,8 @@ import subprocess
 import sys
 import time
 
-KEY_NAME = 'process_once'
+KEY_NAME = "process_once"
+
 
 def main() -> None:
     r = redis.Redis(unix_socket_path="/var/run/redis/redis-server.sock")
@@ -32,5 +33,6 @@ def main() -> None:
         else:
             print(f"Call of {args} failed with return code {res}")
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

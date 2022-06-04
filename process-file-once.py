@@ -7,8 +7,9 @@ import subprocess
 import sys
 import time
 
+
 def main() -> None:
-    conn = sqlite3.connect(pathlib.Path('~/.process-file-once.db').expanduser())
+    conn = sqlite3.connect(pathlib.Path("~/.process-file-once.db").expanduser())
     conn.execute("pragma journal_mode = WAL")
     conn.execute("pragma synchronous = normal")
     conn.execute("pragma mmap_size = 30000000000")
@@ -54,5 +55,6 @@ def main() -> None:
         else:
             print(f"Call of {args} failed with return code {res}")
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()
