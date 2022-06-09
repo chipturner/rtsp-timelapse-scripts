@@ -25,7 +25,7 @@ def handle_file(op: Tuple[int, str, str]) -> None:
     new_size = (top_img.size[0], top_img.size[1] + bottom_img.size[1])
 
     output_dir = sys.argv[1]
-    output_name = f"{output_dir}/output{idx:003d}.png"
+    output_name = f"{output_dir}/output{idx:04d}.png"
     print(f"Writing {output_name} from {top} and {bottom}...")
 
     try:
