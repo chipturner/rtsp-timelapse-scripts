@@ -67,7 +67,7 @@ def main() -> None:
 #        type=bool,
 #        default=True,
 #        action=argparse.BooleanOptionalAction,
-    )
+#   )
     parser.add_argument("--daylight-buffer-minutes", type=int, default=15)
     parser.add_argument("--city", type=str, default="Seattle")
     args = parser.parse_args(namespace=ArgNamespace)
