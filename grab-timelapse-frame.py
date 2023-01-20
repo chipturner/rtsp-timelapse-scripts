@@ -62,11 +62,11 @@ def main() -> None:
     parser.add_argument("--url", type=str, required=True)
     parser.add_argument("--interval", type=int, default=10)
     parser.add_argument("--duration", type=int, default=60)
-    parser.add_argument(
-        "--daylight-only",
-        type=bool,
-        default=True,
-        action=argparse.BooleanOptionalAction,
+#    parser.add_argument(
+#        "--daylight-only",
+#        type=bool,
+#        default=True,
+#        action=argparse.BooleanOptionalAction,
     )
     parser.add_argument("--daylight-buffer-minutes", type=int, default=15)
     parser.add_argument("--city", type=str, default="Seattle")
