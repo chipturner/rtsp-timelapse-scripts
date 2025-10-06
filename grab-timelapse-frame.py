@@ -1,5 +1,7 @@
 #!/usr/bin/python3
 
+from __future__ import annotations
+
 import astral  # type: ignore
 import astral.geocoder  # type: ignore
 import astral.sun  # type: ignore
@@ -12,12 +14,15 @@ import pytz
 import subprocess
 import sys
 import time
-from typing import Tuple
+from dataclasses import dataclass
+from typing import List
 
 
-# Check if the sun is currently "out" in the specified city based on
-# today's dawn and dusk in that city.
 def sun_is_out(city: str, buffer_minutes: int) -> bool:
+    """
+    Check if the sun is currently "out" in the specified city based on
+    today's dawn and dusk in that city.
+    """
     astral_db = astral.geocoder.database()
     camera_city = astral.geocoder.lookup(city, astral_db)
     timezone = pytz.timezone(camera_city.timezone)
@@ -30,25 +35,21 @@ def sun_is_out(city: str, buffer_minutes: int) -> bool:
     return lower <= now <= upper
 
 
-# Simple arg namespace so we get typing of our arguments.  Awkward but
-# adds type safety.
-class ArgNamespace:
+@dataclass
+class Args:
+    """Command line arguments for the program."""
     output_directory: str
     output_filenames: str
     url: str
-    interval: int
-    duration: int
-    daylight_only: bool
-    daylight_buffer_minutes: int
-    city: str
+    interval: int = 10
+    duration: int = 60
+    daylight_only: bool = True
+    daylight_buffer_minutes: int = 15
+    city: str = "Seattle"
 
 
-def main() -> None:
-    logging.basicConfig(
-        format="%(asctime)s.%(msecs)03d %(levelname)s %(module)s - %(funcName)s: %(message)s",
-        datefmt="%Y-%m-%d %H:%M:%S",
-        level=logging.DEBUG,
-    )
+def parse_args() -> Args:
+    """Parse command line arguments."""
     parser = argparse.ArgumentParser(
         description="Grab timelapse frames from an RTSP source"
     )
@@ -64,13 +65,51 @@ def main() -> None:
     parser.add_argument("--duration", type=int, default=60)
     parser.add_argument(
         "--daylight-only",
-        type=bool,
-        default=True,
         action=argparse.BooleanOptionalAction,
+        default=True,
     )
     parser.add_argument("--daylight-buffer-minutes", type=int, default=15)
     parser.add_argument("--city", type=str, default="Seattle")
-    args = parser.parse_args(namespace=ArgNamespace)
+    
+    # Parse args into a namespace and convert to dataclass
+    namespace = parser.parse_args()
+    return Args(
+        output_directory=namespace.output_directory,
+        output_filenames=namespace.output_filenames,
+        url=namespace.url,
+        interval=namespace.interval,
+        duration=namespace.duration,
+        daylight_only=namespace.daylight_only,
+        daylight_buffer_minutes=namespace.daylight_buffer_minutes,
+        city=namespace.city,
+    )
+
+
+def capture_frame(url: str, output_path: pathlib.Path) -> bool:
+    """Capture a single frame from RTSP stream to the specified output path."""
+    try:
+        cmd = [
+            "ffmpeg", "-y", "-loglevel", "fatal", 
+            "-rtsp_transport", "tcp", 
+            "-i", url, 
+            "-frames:v", "1", 
+            str(output_path)
+        ]
+        result = subprocess.run(cmd, check=False, capture_output=True)
+        return result.returncode == 0
+    except Exception as e:
+        logging.error(f"Error capturing frame: {e}")
+        return False
+
+
+def main() -> None:
+    logging.basicConfig(
+        format="%(asctime)s.%(msecs)03d %(levelname)s %(module)s - %(funcName)s: %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S",
+        level=logging.INFO,
+    )
+    
+    args = parse_args()
 
     if args.daylight_only:
         if not sun_is_out(args.city, args.daylight_buffer_minutes):
@@ -94,16 +133,16 @@ def main() -> None:
         output = basedir / time.strftime(output_filenames)
         begin = time.time()
         logging.info(f"Capturing image {succeeded + failed + 1}...")
-        res = subprocess.call(
-            f"ffmpeg -y -loglevel fatal -rtsp_transport tcp -i {args.url} -frames:v 1 {output}",
-            shell=True,
-        )
-        if res == 0:
+        
+        if capture_frame(args.url, output):
             succeeded += 1
         else:
             failed += 1
+            logging.error(f"Failed to capture frame to {output}")
+            
         end = time.time()
-        time.sleep(max(1, int(args.interval) - (end - begin)))
+        sleep_time = max(1, args.interval - int(end - begin))
+        time.sleep(sleep_time)
 
     logging.info(f"Succeeded: {succeeded}, failed: {failed}")
     if failed >= args.duration / args.interval / 2:
